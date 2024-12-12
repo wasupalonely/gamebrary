@@ -1,0 +1,21 @@
+package com.juandmv.game_library_microservice.utils;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.http.HttpStatus;
+
+@Getter
+@Setter
+public class DetailedErrorResponse {
+    private int status;
+    private String error;
+    private String message;
+    private Long timestamp;
+
+    public DetailedErrorResponse(HttpStatus status, String message) {
+        this.status = status.value();
+        this.error = status.getReasonPhrase();
+        this.message = message;
+        this.timestamp = System.currentTimeMillis();
+    }
+}

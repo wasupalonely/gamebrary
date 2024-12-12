@@ -1,0 +1,42 @@
+package com.juandmv.game_library_microservice.dto;
+
+import java.util.List;
+
+public class SimplifiedGameDTO {
+    private Long id;
+    private String name;
+    private String summary;
+    private String coverUrl;
+    private List<String> platforms;
+
+    // Constructor
+    public SimplifiedGameDTO(GameDTO gameDTO) {
+        this.id = gameDTO.getIgdbId();
+        this.name = gameDTO.getTitle();
+        this.summary = gameDTO.getDescription();
+        this.coverUrl = gameDTO.getCoverUrl();
+        this.platforms = gameDTO.getPlatformNames();
+    }
+
+    // Getters
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    public List<String> getPlatforms() {
+        return platforms;
+    }
+}
+

@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+  ## Postgresql interface Pgadmin
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - 5050:80
+    depends_on:
+      - user-db
+      - game-db
+      - game-library-db
+      - rating-db
+    expose:
+      - 5050
+
+  ## Postgres db for user microservice
+  user-db:
+    container_name: user-db
+    image: postgres:15.2
+    environment:
+      POSTGRES_DB: ms_user
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5431:5431
+    expose:
+      - 5431
+    command: -p 5431
+
+  ## Postgres db for game library microservice
+  game-library-db:
+    container_name: game-library-db
+    restart: unless-stopped
+    image: postgres:15.2
+    environment:
+      POSTGRES_DB: ms_game_library
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5433:5433
+    expose:
+      - 5433
+    command: -p 5433
+
+  ## Postgres db for rating microservice
+  rating-db:
+    container_name: rating-db
+    restart: unless-stopped
+    image: postgres:15.2
+    environment:
+      POSTGRES_DB: ms_rating
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5434:5434
+    expose:
+      - 5434
+    command: -p 5434

@@ -1,0 +1,4 @@
+package com.juandmv.game_library_microservice.utils;
+
+public class DetailedErrorResponse {
+}
