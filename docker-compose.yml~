@@ -12,6 +12,7 @@ services:
       - 5050:80
     depends_on:
       - user-db
+      - game-db
       - game-library-db
       - rating-db
     expose:

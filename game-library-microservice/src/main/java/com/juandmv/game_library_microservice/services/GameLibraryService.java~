@@ -75,7 +75,7 @@ public class GameLibraryService {
         }
 
         boolean isValidStatus = Arrays.stream(GameStatus.values())
-                .anyMatch(status -> status.name().equalsIgnoreCase(libraryDTO.getStatus().toString()));
+                .anyMatch(status -> status.name().equals(libraryDTO.getStatus()));
 
         if (!isValidStatus) {
             return ResponseEntity
@@ -85,7 +85,6 @@ public class GameLibraryService {
                             "El estado proporcionado no es válido: " + libraryDTO.getStatus()
                     ));
         }
-
 
 
         GameLibrary gameLibrary = new GameLibrary();

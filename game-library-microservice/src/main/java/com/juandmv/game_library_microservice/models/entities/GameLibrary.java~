@@ -17,5 +17,7 @@ public class GameLibrary {
     private String id;
     private String userId;
     private Long gameId;
+
+    @Enumerated(value = jakarta.persistence.EnumType.STRING)
     private GameStatus status;
 }
