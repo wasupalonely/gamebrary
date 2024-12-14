@@ -1,6 +1,6 @@
 package com.juandmv.game_library_microservice.services;
 
-import com.juandmv.game_library_microservice.dto.GameDTO;
+import com.juandmv.game_library_microservice.models.dto.GameDTO;
 import com.juandmv.game_library_microservice.utils.TokenManager;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;

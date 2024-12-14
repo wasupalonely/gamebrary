@@ -1,13 +1,15 @@
-package com.juandmv.game_library_microservice.dto;
+package com.juandmv.game_library_microservice.models.dto;
 
 import com.juandmv.game_library_microservice.enums.GameStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class LibraryDTO {
     @NotBlank(message = "El id del usuario es requerido")
     private String userId;

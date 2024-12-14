@@ -1,4 +1,4 @@
-package com.juandmv.game_library_microservice.dto;
+package com.juandmv.game_library_microservice.models.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,19 +34,8 @@ public class GameDTO {
     @JsonProperty("platforms")
     private List<Platform> platforms;
 
-    @JsonProperty("genres")
-    private List<Genre> genres;
-
 
     // Clases internas
-    @Getter
-    @Setter
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Genre {
-        @JsonProperty("name")
-        private String name;
-    }
-
     @Getter
     @Setter
     @JsonIgnoreProperties(ignoreUnknown = true)

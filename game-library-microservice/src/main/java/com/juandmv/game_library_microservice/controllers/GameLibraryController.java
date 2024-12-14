@@ -1,8 +1,7 @@
-package com.juandmv.game_library_microservice.controller;
+package com.juandmv.game_library_microservice.controllers;
 
-import com.juandmv.game_library_microservice.dto.GameDTO;
-import com.juandmv.game_library_microservice.dto.LibraryDTO;
-import com.juandmv.game_library_microservice.models.entities.GameLibrary;
+import com.juandmv.game_library_microservice.models.dto.GameDTO;
+import com.juandmv.game_library_microservice.models.dto.LibraryDTO;
 import com.juandmv.game_library_microservice.services.GameLibraryService;
 import com.juandmv.game_library_microservice.services.IgdbService;
 import com.juandmv.game_library_microservice.utils.Utils;

@@ -1,21 +1,23 @@
 package com.juandmv.game_library_microservice.services;
 
-import com.juandmv.game_library_microservice.dto.GameDTO;
-import com.juandmv.game_library_microservice.dto.LibraryDTO;
+import com.juandmv.game_library_microservice.models.dto.GameDTO;
+import com.juandmv.game_library_microservice.models.dto.LibraryDTO;
 import com.juandmv.game_library_microservice.enums.GameStatus;
 import com.juandmv.game_library_microservice.models.entities.GameLibrary;
 import com.juandmv.game_library_microservice.repository.GameLibraryRepository;
+import com.juandmv.game_library_microservice.utils.BaseResponse;
 import com.juandmv.game_library_microservice.utils.ErrorResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class GameLibraryService {
 
     @Autowired
@@ -24,13 +26,31 @@ public class GameLibraryService {
     @Autowired
     private IgdbService igdbService;
 
-    public GameLibraryService(GameLibraryRepository gameLibraryRepository) {
-        this.gameLibraryRepository = gameLibraryRepository;
-    }
+    private final WebClient.Builder webClientBuilder;
+
+
 
     public ResponseEntity<?> getAllGamesByUserId(String userId) {
         // TODO: Validar que el usuario exista con el microservicio de usuarios
-        Optional<List<GameLibrary>> games = gameLibraryRepository.findByUserId(userId);
+        boolean result = Boolean.TRUE.equals(this.webClientBuilder.build()
+                .get()
+                .uri("http://localhost:8084/users/exist/" + userId)
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .block());
+
+        if (!result) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(
+                            "El usuario no existe",
+                            "El usuario con ID: " + userId + " no existe"
+                    ));
+        }
+
+        List<GameLibrary> games = gameLibraryRepository.findByUserId(userId).orElse(Collections.emptyList());
+        System.out.println("games: " + games);
+        System.out.println("ESTÁ VAACÍO? " + games.isEmpty());
 
         if (games.isEmpty()) {
             return ResponseEntity
@@ -39,18 +59,16 @@ public class GameLibraryService {
                             "Juegos no encontrados",
                             "No se encontraron juegos para el usuario: " + userId
                     ));
+        } else {
+            List<Long> igdbIds = games
+                    .stream()
+                    .map(GameLibrary::getGameId)
+                    .toList();
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(igdbService.getGamesByManyId(igdbIds));
         }
-
-        List<Long> igdbIds = games
-                .get()
-                .stream()
-                .map(GameLibrary::getGameId)
-                .toList();
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(igdbService.getGamesByManyId(igdbIds));
-
     }
 
     public ResponseEntity<?> saveGameLibrary(LibraryDTO libraryDTO) {

@@ -1,21 +1,26 @@
-package com.juandmv.game_library_microservice.models.entities;
+package com.juandmv.rating_microservice.models.entities;
 
-import com.juandmv.game_library_microservice.enums.GameStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Entity
+@Table(name = "ratings")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@Table(name = "game_library")
-public class GameLibrary {
+public class Rating {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
     private String userId;
+
     private Long gameId;
-    private GameStatus status;
+
+    private Integer rating;
+
+    private String comment;
 }
