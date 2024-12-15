@@ -26,6 +26,7 @@
 		<url/>
 	</scm>
 	<properties>
+		<spring-cloud.version>2024.0.0</spring-cloud.version>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,11 +36,25 @@
 		<module>game-library-microservice</module>
 		<module>user-microservice</module>
 		<module>rating-microservice</module>
+		<module>api-gateway</module>
+		<module>discovery-server</module>
 	</modules>
 
 	<dependencies>
 
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<build>
 		<plugins>

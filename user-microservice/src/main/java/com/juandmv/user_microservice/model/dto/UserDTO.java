@@ -3,11 +3,13 @@ package com.juandmv.user_microservice.model.dto;
 import com.juandmv.user_microservice.enums.RoleEnum;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class UserDTO {
 
     @NotEmpty(message = "El username es requerido")

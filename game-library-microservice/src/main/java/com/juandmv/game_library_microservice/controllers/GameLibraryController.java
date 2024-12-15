@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/games")
+@RequestMapping("/api/games")
 public class GameLibraryController {
 
     @Autowired
@@ -44,6 +44,11 @@ public class GameLibraryController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getAllGamesByUserId(@PathVariable String userId) {
         return gameService.getAllGamesByUserId(userId);
+    }
+
+    @GetMapping("/user/{userId}/game/{gameId}")
+    public ResponseEntity<?> getGameByUserIdAndGameId(@PathVariable String userId, @PathVariable Long gameId) {
+        return gameService.findGameByUserIdAndGameId(userId, gameId);
     }
 
     @PostMapping("/")

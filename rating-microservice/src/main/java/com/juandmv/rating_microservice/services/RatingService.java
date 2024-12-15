@@ -1,6 +1,8 @@
 package com.juandmv.rating_microservice.services;
 
+import com.juandmv.rating_microservice.enums.GameStatus;
 import com.juandmv.rating_microservice.models.dto.GameDTO;
+import com.juandmv.rating_microservice.models.dto.LibraryDTO;
 import com.juandmv.rating_microservice.models.dto.RatingDTO;
 import com.juandmv.rating_microservice.models.entities.Rating;
 import com.juandmv.rating_microservice.repository.RatingRepository;
@@ -32,7 +34,7 @@ public class RatingService {
 
         boolean userResult = Boolean.TRUE.equals(this.webClientBuilder.build()
                 .get()
-                .uri("http://localhost:8084/users/exist/" + userId)
+                .uri("lb://user-microservice/api/users/exist/" + userId)
                 .retrieve()
                 .bodyToMono(Boolean.class)
                 .block());
@@ -51,7 +53,7 @@ public class RatingService {
 
         GameDTO gameResult = this.webClientBuilder.build()
                 .get()
-                .uri("http://localhost:8081/games/" + gameId)
+                .uri("lb://library-microservice/api/games/" + gameId)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> {
                     if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
@@ -73,8 +75,39 @@ public class RatingService {
                     ));
         }
 
-        // TODO: VALIDAR QUE EL USUARIO TENGA ESE JUEGO EN LA BIBLIOTECA Y VALIDAR QUE LO TENGA EN ESTADO "PLAYED"
-        // HACER LLAMADO A GAME-LIBRARY PARA HACER LA TAREA
+
+        LibraryDTO libraryResult = this.webClientBuilder.build()
+                .get()
+                .uri("lb://library-microservice/api/games/user/" + userId + "/game/" + gameId)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> {
+                    if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                        return Mono.error(new RuntimeException("El juego no existe"));
+                    }
+                    return response.createException();
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, ClientResponse::createException)
+                .bodyToMono(LibraryDTO.class)
+                .onErrorResume(e -> Mono.empty())
+                .block();
+
+        if (libraryResult == null) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(
+                            "El juego no existe",
+                            "El juego con ID: " + gameId + " no existe"
+                    ));
+        }
+
+        if (!libraryResult.getStatus().equals(GameStatus.PLAYED)) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse(
+                            "El usuario no ha terminado el juego",
+                            "El juego con ID: " + gameId + " no está en estado PLAYED"
+                    ));
+        }
 
         // VALIDAR SI EL USUARIO YA TIENE UNA CALIFICACIÓN PARA EL JUEGO
         Rating ratingResult = ratingRepository.findByUserIdAndGameId(userId, gameId).orElse(null);

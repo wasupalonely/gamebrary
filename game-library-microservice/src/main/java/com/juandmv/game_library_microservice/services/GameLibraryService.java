@@ -9,32 +9,42 @@ import com.juandmv.game_library_microservice.utils.BaseResponse;
 import com.juandmv.game_library_microservice.utils.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
 @Service
-@RequiredArgsConstructor
 public class GameLibraryService {
 
     @Autowired
     private final GameLibraryRepository gameLibraryRepository;
 
     @Autowired
-    private IgdbService igdbService;
+    private final IgdbService igdbService;
 
     private final WebClient.Builder webClientBuilder;
 
-
+    public GameLibraryService(
+            GameLibraryRepository gameLibraryRepository,
+            @Qualifier("loadBalancedWebClientBuilder") WebClient.Builder webClientBuilder,
+            IgdbService igdbService
+    ) {
+        this.gameLibraryRepository = gameLibraryRepository;
+        this.webClientBuilder = webClientBuilder;
+        this.igdbService = igdbService;
+    }
 
     public ResponseEntity<?> getAllGamesByUserId(String userId) {
-        // TODO: Validar que el usuario exista con el microservicio de usuarios
         boolean result = Boolean.TRUE.equals(this.webClientBuilder.build()
                 .get()
-                .uri("http://localhost:8084/users/exist/" + userId)
+                .uri("lb://user-microservice/api/users/exist/" + userId)
                 .retrieve()
                 .bodyToMono(Boolean.class)
                 .block());
@@ -49,8 +59,6 @@ public class GameLibraryService {
         }
 
         List<GameLibrary> games = gameLibraryRepository.findByUserId(userId).orElse(Collections.emptyList());
-        System.out.println("games: " + games);
-        System.out.println("ESTÁ VAACÍO? " + games.isEmpty());
 
         if (games.isEmpty()) {
             return ResponseEntity
@@ -72,6 +80,23 @@ public class GameLibraryService {
     }
 
     public ResponseEntity<?> saveGameLibrary(LibraryDTO libraryDTO) {
+        String userId = libraryDTO.getUserId();
+        boolean result = Boolean.TRUE.equals(this.webClientBuilder.build()
+                .get()
+                .uri("lb://user-microservice/api/users/exist/" + userId)
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .block());
+
+        if (!result) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(
+                            "El usuario no existe",
+                            "El usuario con ID: " + userId + " no existe"
+                    ));
+        }
+
         Optional<GameDTO> game = findGameById(libraryDTO.getGameId());
 
         if (game.isEmpty()) {
@@ -132,6 +157,61 @@ public class GameLibraryService {
                 .filter(list -> !list.isEmpty())
                 .map(list -> list.get(0));
     }
+
+    public ResponseEntity<?> findGameByUserIdAndGameId(String userId, Long gameId) {
+        boolean result = Boolean.TRUE.equals(this.webClientBuilder.build()
+                .get()
+                .uri("lb://user-microservice/api/users/exist/" + userId)
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .block());
+
+        if (!result) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(
+                            "El usuario no existe",
+                            "El usuario con ID: " + userId + " no existe"
+                    ));
+        }
+
+        GameDTO gameResult = this.webClientBuilder.build()
+                .get()
+                .uri("lb://library-microservice/api/games/" + gameId)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> {
+                    if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                        return Mono.error(new RuntimeException("El juego no existe"));
+                    }
+                    return response.createException();
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, ClientResponse::createException)
+                .bodyToMono(GameDTO.class)
+                .onErrorResume(e -> Mono.empty()) // Esto evita que el flujo se rompa
+                .block();
+
+        if (gameResult == null) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(
+                            "El juego no existe",
+                            "El juego con ID: " + gameId + " no existe"
+                    ));
+        }
+
+        return gameLibraryRepository.findByUserIdAndGameId(userId, gameId)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(new ErrorResponse(
+                                "Juego no encontrado",
+                                "No se encontró un juego con el ID: " + gameId + " para el usuario con ID: " + userId
+                        )));
+    }
+
+
+    // TODO: Crear la función para editar el estado del juego
+
 
 
     // HELPERS

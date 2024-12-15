@@ -2,6 +2,7 @@ package com.juandmv.game_library_microservice.services;
 
 import com.juandmv.game_library_microservice.models.dto.GameDTO;
 import com.juandmv.game_library_microservice.utils.TokenManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class IgdbService {
     private final WebClient webClient;
     private final TokenManager tokenManager;
 
-    public IgdbService(WebClient.Builder webClientBuilder, TokenManager tokenManager) {
+    public IgdbService(@Qualifier("defaultWebClientBuilder") WebClient.Builder webClientBuilder, TokenManager tokenManager) {
         this.webClient = webClientBuilder.baseUrl("https://api.igdb.com/v4").build();
         this.tokenManager = tokenManager;
     }

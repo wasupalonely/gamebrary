@@ -12,7 +12,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -22,6 +22,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public boolean existUser(@PathVariable String userId) {
         return userService.existUser(userId);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getUser(@PathVariable String userId) {
+        return userService.getUser(userId);
     }
 
     @PostMapping("/create")

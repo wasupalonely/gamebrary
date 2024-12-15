@@ -6,6 +6,7 @@ import com.juandmv.user_microservice.model.entities.User;
 import com.juandmv.user_microservice.repository.UserRepository;
 import com.juandmv.user_microservice.utils.ErrorResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,25 @@ public class UserService {
 
     public boolean existUser(String userId) {
         return userRepository.existsById(userId);
+    }
+
+    public ResponseEntity<?> getUser(String userId) {
+        UserDTO user = userRepository.findById(userId).map(userEntity -> UserDTO.builder()
+                .username(userEntity.getUsername())
+                .email(userEntity.getEmail())
+                .role(RoleEnum.valueOf(userEntity.getRole()))
+                .enabled(userEntity.isEnabled())
+                .build())
+                .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Error al obtener el usuario", "El usuario no existe"));
+        }
+
+        return ResponseEntity.ok(user);
+
     }
 
     public ResponseEntity<?> createUser(UserDTO userDTO) {

@@ -1,6 +1,7 @@
 package com.juandmv.game_library_microservice.utils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -13,7 +14,7 @@ public class TokenManager {
 
     private final WebClient webClient;
 
-    public TokenManager(WebClient.Builder webClientBuilder) {
+    public TokenManager(@Qualifier("defaultWebClientBuilder") WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("https://id.twitch.tv/oauth2/token").build();
     }
 

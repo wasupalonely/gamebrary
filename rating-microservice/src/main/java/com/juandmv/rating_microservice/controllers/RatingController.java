@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/rating")
+@RequestMapping("/api/rating")
 @RequiredArgsConstructor
 public class RatingController {
 
@@ -26,4 +26,7 @@ public class RatingController {
         if (result.hasErrors()) return Utils.validation(result);
         return ratingService.saveRating(ratingDTO);
     }
+
+    // TODO: HACER TODOS LOS DEMÁS ENDPOINTS PARA RATING, COMO: OBTENER RATING POR ID, OBTENER RATING POR JUEGO, OBTENER RATING POR USUARIO
+    // Y PODER EDITAR LOS RATINGS
 }
